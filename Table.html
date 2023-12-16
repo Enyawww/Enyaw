@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV Data Processing</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 20px;
+      background: linear-gradient(to right, #8caece, #dcd9da);
+      color: #3d6b7c;
+      padding: 20px;
+    }  
+    h1, h2 {
+    color: #333;
+    border-bottom: 2px solid #333;
+    padding-bottom: 5px;
+  }  
+    input[type="file"] {
+      margin-bottom: 10px;
+    }  
+    table {
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      width: 100%;
+      background:none;
+      border-radius: 5px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }  
+    table, th, td {
+      border: 1px solid #ccc;
+    }  
+    th, td {
+      padding: 10px;
+      text-align: center;
+    }  
+    tbody tr:hover {
+      background-color: #a9ccd1;
+    }  
+    p {
+      margin: 10px 0;
+    }
+  </style>
+  
+  
+</head>
+<body>
+
+<div id="app">
+  <h1>CSV Data Processing</h1>
+
+  <!-- Select File -->
+  <input type="file" accept=".csv" v-on:change="handleFileSelect">
+
+  <!-- Display Table 1 -->
+  <h2>Table 1</h2>
+  <table>
+    <tr v-for="(row, rowIndex) in csvData1" :key="rowIndex">
+      <td v-for="(cell, colIndex) in row" :key="colIndex">{{ cell }}</td>
+    </tr>
+  </table>
+
+  <!-- Display Calculations for Table 1 -->
+  <h2>Calculations for Table 1</h2>
+  <p>Sum of the second column: {{ calculationResult1 }}</p>
+
+  <!-- Display Table 2 -->
+  <h2>Table 2</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Alpha</td>
+        <td>{{ table2Calculations.alphaValue }}</td>
+      </tr>
+      <tr>
+        <td>Beta</td>
+        <td>{{ table2Calculations.betaValue }}</td>
+      </tr>
+      <tr>
+        <td>Charlie</td>
+        <td>{{ table2Calculations.charlieValue }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Display Calculations for Table 2 -->
+  <h2>Calculations for Table 2</h2>
+  <p>
+    Alpha: {{ table2Calculations.alphaValue }},
+    Beta: {{ table2Calculations.betaValue }},
+    Charlie: {{ table2Calculations.charlieValue }}
+  </p>
+</div>
+
+<script>
+new Vue({
+  el: '#app',
+  data: {
+    csvData1: [],
+    calculationResult1: 0,
+    table2Calculations: {
+      alphaValue: 0,
+      betaValue: 0,
+      charlieValue: 0,
+    },
+  },
+  methods: {
+    handleFileSelect(event) {
+      const file = event.target.files[0];
+
+      if (file) {
+        const reader = new FileReader();
+        reader.readAsText(file);
+
+        reader.onload = () => {
+          const csvData = this.parseCSV(reader.result);
+          if (csvData.length > 0) {
+            this.csvData1 = csvData;
+
+            // Perform calculations for Table 1
+            this.calculationResult1 = this.performCalculations(csvData);
+
+            // Perform calculations for Table 2
+            this.table2Calculations = this.performTable2Calculations(csvData);
+          } else {
+            alert('Error: Empty or invalid CSV file.');
+          }
+        };
+      }
+    },
+    parseCSV(csvData) {
+      const rows = csvData.split('\n');
+      return rows.map(row => row.split(/\t|,/)); // Attempt to handle both tab and comma separators
+    },
+    performCalculations(data) {
+      // Example: Sum the values in the second column, skipping the header row
+      return data.slice(1).reduce((total, row) => total + parseInt(row[1] || 0, 10), 0);
+    },
+    performTable2Calculations(data) {
+      const alphaValue = parseInt(data[5][1] || 0, 10) + parseInt(data[20][1] || 0, 10);
+      const betaValue = Math.round(parseInt(data[15][1] || 0, 10) / parseInt(data[7][1] || 1, 10)); // Avoid division by zero
+      const charlieValue = parseInt(data[13][1] || 0, 10) * parseInt(data[12][1] || 0, 10);
+
+      return {
+        alphaValue,
+        betaValue,
+        charlieValue,
+      };
+    },
+  },
+});
+</script>
+</body>
+</html>
